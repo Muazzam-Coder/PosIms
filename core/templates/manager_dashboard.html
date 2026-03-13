@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Manager Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Manager Dashboard</h1>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h3>{{ today_sales }}</h3>
+            <p>Today's Sales</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h3>${{ today_revenue }}</h3>
+            <p>Today's Revenue</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h3>{{ low_stock_products }}</h3>
+            <p>Low Stock Items</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h3>{{ total_customers }}</h3>
+            <p>Total Customers</p>
+        </div>
+    </div>
+</div>
+
+{% if low_stock_products > 0 %}
+<div class="alert alert-warning alert-custom mt-4" role="alert">
+    <h5>⚠️ Low Stock Alert</h5>
+    <p>You have {{ low_stock_products }} products with low stock levels. <a href="{% url 'inventory_status' %}">View Details</a></p>
+</div>
+{% endif %}
+
+<div class="row mt-5">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Product Management</h5>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'product_list' %}" class="btn btn-outline-primary btn-custom w-100 mb-2">
+                    <i class="bi bi-box"></i> View All Products
+                </a>
+                <a href="{% url 'product_create' %}" class="btn btn-outline-primary btn-custom w-100">
+                    <i class="bi bi-plus-circle"></i> Add New Product
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Reports & Inventory</h5>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'sales_report' %}" class="btn btn-outline-success btn-custom w-100 mb-2">
+                    <i class="bi bi-graph-up"></i> Sales Report
+                </a>
+                <a href="{% url 'inventory_status' %}" class="btn btn-outline-success btn-custom w-100">
+                    <i class="bi bi-pie-chart"></i> Inventory Status
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

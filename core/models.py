@@ -49,6 +49,20 @@ class SaleItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.PROTECT) # Don't delete product if in a sale
     quantity = models.PositiveIntegerField()
     price_at_sale = models.DecimalField(max_digits=10, decimal_places=2) # Record price at the time of sale
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0) # Per-item discount
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name} in Sale {self.sale.id}"
+
+# FR: Handle product returns
+class Return(models.Model):
+    sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    quantity = models.PositiveIntegerField()
+    reason = models.TextField(blank=True, null=True)
+    return_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    returned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Return: {self.quantity} x {self.product.name} from Sale #{self.sale.id}"

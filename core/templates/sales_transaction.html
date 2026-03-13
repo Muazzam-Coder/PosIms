@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+
+{% block title %}Process Sale{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Process New Sale</h1>
+
+<div class="row">
+    <!-- LEFT SIDE: Customer Info & Items -->
+    <div class="col-md-8">
+        <!-- Customer Information -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Customer Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Customer Name (Optional)</label>
+                        <input type="text" id="customer_name" class="form-control" placeholder="Leave blank for walk-in">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Phone Number (Optional)</label>
+                        <input type="text" id="customer_phone" class="form-control" placeholder="Phone number">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sale Items -->
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Sale Items</h5>
+            </div>
+            <div class="card-body">
+                <div id="items_container"></div>
+                <button type="button" class="btn btn-outline-success" onclick="addSaleItem()">
+                    <i class="bi bi-plus-circle"></i> Add Item
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT SIDE: Sale Summary -->
+    <div class="col-md-4">
+        <div class="card sticky-top">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Sale Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Subtotal</label>
+                    <input type="number" id="subtotal" class="form-control" readonly value="0.00" step="0.01">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Discount (%)</label>
+                    <input type="number" id="discount_pct" class="form-control" value="0" step="0.01" onchange="recalcTotal()">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Total Amount</label>
+                    <input type="number" id="total_amount" class="form-control form-control-lg" readonly value="0.00" step="0.01">
+                </div>
+                <button type="button" class="btn btn-primary btn-lg w-100" onclick="finalizeSale()">
+                    <i class="bi bi-check-circle"></i> Complete Sale
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden Form for Submission -->
+<form id="sale_form" method="POST" style="display: none;">
+    {% csrf_token %}
+    <input type="hidden" id="hid_customer_name" name="customer_name">
+    <input type="hidden" id="hid_customer_phone" name="customer_phone">
+    <input type="hidden" id="hid_discount_pct" name="discount_percentage">
+    <input type="hidden" id="hid_total_amount" name="total_amount">
+    <div id="hid_items"></div>
+</form>
+
+<!-- JavaScript -->
+<script>
+    var PRODUCTS_DATA = [];
+    var itemRowCounter = 0;
+
+    // Populate products from Django template
+    {% for product in products %}
+    PRODUCTS_DATA.push({
+        id: {{ product.id }},
+        name: "{{ product.name|escapejs }}",
+        price: {{ product.selling_price }},
+        stock: {{ product.stock_quantity }}
+    });
+    {% endfor %}
+
+    // Add a new sale item row
+    function addSaleItem() {
+        itemRowCounter++;
+        var itemId = "item_" + itemRowCounter;
+        
+        var itemHtml = '<div class="row mb-3 item-row" id="' + itemId + '" class="border p-3 rounded mb-3">' +
+            '<div class="col-md-4">' +
+            '<label class="form-label">Product</label>' +
+            '<select class="form-control product-select" data-itemid="' + itemRowCounter + '" onchange="onProductChange(' + itemRowCounter + ')">' +
+            '<option value="">-- Select Product --</option>';
+        
+        // Add product options
+        for (var j = 0; j < PRODUCTS_DATA.length; j++) {
+            var prod = PRODUCTS_DATA[j];
+            itemHtml += '<option value="' + prod.id + '" data-price="' + prod.price + '">' +
+                prod.name + ' (Stock: ' + prod.stock + ') - $' + prod.price +
+                '</option>';
+        }
+        
+        itemHtml += '</select></div>' +
+            '<div class="col-md-2">' +
+            '<label class="form-label">Qty</label>' +
+            '<input type="number" class="form-control qty-input" data-itemid="' + itemRowCounter + '" value="1" min="1" onchange="recalcTotal()">' +
+            '</div>' +
+            '<div class="col-md-2">' +
+            '<label class="form-label">Unit Price</label>' +
+            '<input type="number" class="form-control item-price" data-itemid="' + itemRowCounter + '" readonly value="0.00" step="0.01">' +
+            '</div>' +
+            '<div class="col-md-2">' +
+            '<label class="form-label">Discount ($)</label>' +
+            '<input type="number" class="form-control item-discount" data-itemid="' + itemRowCounter + '" value="0" step="0.01" onchange="recalcTotal()">' +
+            '</div>' +
+            '<div class="col-md-1">' +
+            '<label class="form-label">Total</label>' +
+            '<input type="number" class="form-control item-total" data-itemid="' + itemRowCounter + '" readonly value="0.00" step="0.01">' +
+            '</div>' +
+            '<div class="col-md-1 d-flex align-items-end">' +
+            '<button type="button" class="btn btn-danger btn-sm w-100" onclick="removeItem(' + itemRowCounter + ')">' +
+            '<i class="bi bi-trash"></i>' +
+            '</button>' +
+            '</div>' +
+            '</div>';
+        
+        document.getElementById("items_container").insertAdjacentHTML("beforeend", itemHtml);
+    }
+
+    // Product selection changed
+    function onProductChange(itemId) {
+        var select = document.querySelector('[data-itemid="' + itemId + '"].product-select');
+        var priceField = document.querySelector('[data-itemid="' + itemId + '"].item-price');
+        
+        if (select && priceField) {
+            var option = select.options[select.selectedIndex];
+            var price = option.getAttribute("data-price") || "0";
+            priceField.value = price;
+            recalcTotal();
+        }
+    }
+
+    // Recalculate totals including per-item discounts
+    function recalcTotal() {
+        var subtotal = 0;
+        var itemRows = document.querySelectorAll(".item-row");
+        
+        itemRows.forEach(function(row) {
+            var priceField = row.querySelector(".item-price");
+            var qtyField = row.querySelector(".qty-input");
+            var discountField = row.querySelector(".item-discount");
+            var totalField = row.querySelector(".item-total");
+            
+            if (priceField && qtyField) {
+                var price = parseFloat(priceField.value) || 0;
+                var qty = parseInt(qtyField.value) || 0;
+                var itemDiscount = parseFloat(discountField.value) || 0;
+                var itemTotal = (price * qty) - itemDiscount;
+                totalField.value = itemTotal.toFixed(2);
+                subtotal += itemTotal;
+            }
+        });
+        
+        document.getElementById("subtotal").value = subtotal.toFixed(2);
+        
+        var discountPct = parseFloat(document.getElementById("discount_pct").value) || 0;
+        var discountAmt = (subtotal * discountPct) / 100;
+        var total = subtotal - discountAmt;
+        
+        document.getElementById("total_amount").value = total.toFixed(2);
+    }
+
+    // Finalize and submit sale
+    function finalizeSale() {
+        var itemRows = document.querySelectorAll(".item-row");
+        
+        if (itemRows.length === 0) {
+            alert("Please add at least one item");
+            return;
+        }
+        
+        var hasSelection = false;
+        var stockErrors = [];
+        
+        itemRows.forEach(function(row) {
+            var select = row.querySelector(".product-select");
+            var qtyField = row.querySelector(".qty-input");
+            
+            if (select && select.value > 0) {
+                hasSelection = true;
+                
+                // Find product in PRODUCTS_DATA
+                var productId = parseInt(select.value);
+                var qty = parseInt(qtyField.value) || 1;
+                var product = PRODUCTS_DATA.find(p => p.id === productId);
+                
+                if (product && product.stock < qty) {
+                    stockErrors.push(product.name + " only has " + product.stock + " in stock, trying to sell " + qty);
+                }
+            }
+        });
+        
+        if (stockErrors.length > 0) {
+            alert("Insufficient Stock:\n" + stockErrors.join("\n"));
+            return;
+        }
+        
+        if (!hasSelection) {
+            alert("Please select at least one product");
+            return;
+        }
+        
+        // Populate hidden form
+        document.getElementById("hid_customer_name").value = document.getElementById("customer_name").value;
+        document.getElementById("hid_customer_phone").value = document.getElementById("customer_phone").value;
+        document.getElementById("hid_discount_pct").value = document.getElementById("discount_pct").value;
+        document.getElementById("hid_total_amount").value = document.getElementById("total_amount").value;
+        
+        // Add item data
+        var itemsHtml = "";
+        itemRows.forEach(function(row) {
+            var select = row.querySelector(".product-select");
+            var qtyField = row.querySelector(".qty-input");
+            var discountField = row.querySelector(".item-discount");
+            
+            if (select && select.value > 0) {
+                var productId = select.value;
+                var qty = qtyField.value || 1;
+                var discount = discountField.value || 0;
+                itemsHtml += '<input type="hidden" name="product_id" value="' + productId + '">';
+                itemsHtml += '<input type="hidden" name="quantity" value="' + qty + '">';
+                itemsHtml += '<input type="hidden" name="discount_amount" value="' + discount + '">';
+            }
+        });
+        
+        document.getElementById("hid_items").innerHTML = itemsHtml;
+        document.getElementById("sale_form").submit();
+    }
+
+    // Initialize - add first item on page load
+    window.addEventListener("load", function() {
+        addSaleItem();
+    });
+</script>
+{% endblock %}

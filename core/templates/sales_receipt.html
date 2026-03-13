@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}Sales Receipt{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0 text-center">Sale Receipt</h4>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <h2>#{{ sale.id }}</h2>
+                    <p class="text-muted">{{ sale.timestamp|date:"M d, Y H:i" }}</p>
+                </div>
+
+                <hr>
+
+                <div class="mb-3">
+                    <strong>Customer:</strong> {{ sale.customer.name }}<br>
+                    <strong>Phone:</strong> {{ sale.customer.phone_number|default:"N/A" }}<br>
+                    <strong>Cashier:</strong> {{ sale.cashier.username }}
+                </div>
+
+                <hr>
+
+                <h5 class="mb-3">Items:</h5>
+                <table class="table table-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Item</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Discount</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>${{ item.price_at_sale }}</td>
+                            <td>{% if item.discount_amount > 0 %}-${{ item.discount_amount|floatformat:2 }}{% else %}-{% endif %}</td>
+                            <td>${{ item.quantity|mul:item.price_at_sale|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-6 text-end"><strong>Subtotal:</strong></div>
+                    <div class="col-6 text-end">${{ subtotal|floatformat:2 }}</div>
+                </div>
+                
+                {% if sale.discount_percentage > 0 %}
+                <div class="row">
+                    <div class="col-6 text-end"><strong>Discount ({{ sale.discount_percentage }}%):</strong></div>
+                    <div class="col-6 text-end">-${{ discount_amount|floatformat:2 }}</div>
+                </div>
+                {% endif %}
+
+                <div class="row mt-3">
+                    <div class="col-6 text-end"><h5><strong>Total:</strong></h5></div>
+                    <div class="col-6 text-end"><h5>${{ sale.total_amount|floatformat:2 }}</h5></div>
+                </div>
+
+                <hr>
+
+                <div class="text-center text-muted">
+                    <small>Thank you for your purchase!</small>
+                </div>
+
+                <div class="mt-4">
+                    <button onclick="window.print()" class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-printer"></i> Print Receipt
+                    </button>
+                    <a href="{% url 'process_return' pk=sale.id %}" class="btn btn-warning w-100 mb-2">
+                        <i class="bi bi-arrow-return-left"></i> Process Return
+                    </a>
+                    <a href="{% url 'sales_transaction' %}" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-receipt"></i> New Sale
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

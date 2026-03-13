@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Products - POS & Inventory{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Products</h1>
+    <a href="{% url 'product_create' %}" class="btn btn-primary btn-custom">
+        <i class="bi bi-plus-circle"></i> Add Product
+    </a>
+</div>
+
+<!-- Search and Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                {{ form.search }}
+            </div>
+            <div class="col-md-4">
+                {{ form.category_filter }}
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-secondary w-100">Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Products Table -->
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Threshold</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr {% if product.is_low_stock %}class="low-stock"{% endif %}>
+                    <td><strong>{{ product.name }}</strong></td>
+                    <td>{{ product.category }}</td>
+                    <td>${{ product.selling_price }}</td>
+                    <td>{{ product.stock_quantity }}</td>
+                    <td>{{ product.low_stock_threshold }}</td>
+                    <td>
+                        {% if product.stock_quantity == 0 %}
+                            <span class="badge bg-danger">Out of Stock</span>
+                        {% elif product.is_low_stock %}
+                            <span class="badge bg-warning">Low Stock</span>
+                        {% else %}
+                            <span class="badge bg-success">In Stock</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'product_update' product.id %}" class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-5">No products found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Product Returns{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h1>Product Returns</h1>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if returns %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Sale ID</th>
+                        <th>Product</th>
+                        <th>Quantity Returned</th>
+                        <th>Refund Amount</th>
+                        <th>Reason</th>
+                        <th>Returned By</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for return in returns %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'sales_receipt' pk=return.sale.id %}">
+                                #{{ return.sale.id }}
+                            </a>
+                        </td>
+                        <td>{{ return.product.name }}</td>
+                        <td>{{ return.quantity }}</td>
+                        <td><span class="badge bg-danger">${{ return.return_amount }}</span></td>
+                        <td>{{ return.reason|default:"N/A" }}</td>
+                        <td>{{ return.returned_by.username }}</td>
+                        <td>{{ return.created_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <h4>No Returns Found</h4>
+            <p>There are no product returns recorded yet.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

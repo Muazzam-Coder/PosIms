@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Sales History{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Sales History</h1>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Sale ID</th>
+                    <th>Customer</th>
+                    <th>Cashier</th>
+                    <th>Items</th>
+                    <th>Total Amount</th>
+                    <th>Discount</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %}
+                <tr>
+                    <td><strong>#{{ sale.id }}</strong></td>
+                    <td>{{ sale.customer.name }}</td>
+                    <td>{{ sale.cashier.username }}</td>
+                    <td>{{ sale.items.count }}</td>
+                    <td><strong>${{ sale.total_amount }}</strong></td>
+                    <td>
+                        {% if sale.discount_percentage > 0 %}
+                            {{ sale.discount_percentage }}%
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>{{ sale.timestamp|date:"M d, Y H:i" }}</td>
+                    <td>
+                        <a href="{% url 'sales_receipt' sale.id %}" class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-printer"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-5">No sales found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

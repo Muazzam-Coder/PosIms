@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}Inventory Report{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Inventory Report</h1>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h3>{{ report_data.total_products }}</h3>
+            <p>Total Products</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h3>${{ report_data.total_stock_value }}</h3>
+            <p>Total Stock Value</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h3>{{ report_data.low_stock_count }}</h3>
+            <p>Low Stock Items</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h3>{{ report_data.out_of_stock_count }}</h3>
+            <p>Out of Stock</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Inventory Details</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Stock Qty</th>
+                    <th>Unit Price</th>
+                    <th>Stock Value</th>
+                    <th>Threshold</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td><strong>{{ product.name }}</strong></td>
+                    <td>{{ product.category }}</td>
+                    <td>{{ product.stock_quantity }}</td>
+                    <td>${{ product.selling_price }}</td>
+                    <td>${{ product.stock_quantity|mul:product.selling_price }}</td>
+                    <td>{{ product.low_stock_threshold }}</td>
+                    <td>
+                        {% if product.stock_quantity == 0 %}
+                            <span class="badge bg-danger">Out of Stock</span>
+                        {% elif product.stock_quantity <= product.low_stock_threshold %}
+                            <span class="badge bg-warning">Low Stock</span>
+                        {% else %}
+                            <span class="badge bg-success">In Stock</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

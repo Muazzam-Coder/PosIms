@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Sales Report{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Sales Report</h1>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Generate Report</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                {{ form.start_date }}
+            </div>
+            <div class="col-md-3">
+                {{ form.end_date }}
+            </div>
+            <div class="col-md-3">
+                {{ form.report_type }}
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Generate</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if report_data %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h3>{{ report_data.total_sales }}</h3>
+            <p>Total Sales</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h3>${{ report_data.total_revenue }}</h3>
+            <p>Total Revenue</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h3>{{ report_data.total_quantity_sold }}</h3>
+            <p>Total Quantity Sold</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h3>{{ report_data.num_unique_items }}</h3>
+            <p>Unique Items</p>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    <strong>Report Period:</strong> {{ report_data.period }}<br>
+    <strong>Average Sale Value:</strong> ${{ report_data.average_sale }}<br>
+    <strong>Total Discount:</strong> {{ report_data.total_discount }}%
+</div>
+
+{% if product_summary %}
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">Product Summary (Quantity & Items Sold)</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Product</th>
+                    <th>Total Quantity</th>
+                    <th>Number of Items</th>
+                    <th>Total Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pid, summary in product_summary.items %}
+                <tr>
+                    <td>{{ summary.product_name }}</td>
+                    <td><span class="badge bg-primary">{{ summary.total_quantity }}</span></td>
+                    <td><span class="badge bg-secondary">{{ summary.num_items }}</span></td>
+                    <td>${{ summary.total_revenue|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">Sales Details</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Sale ID</th>
+                    <th>Customer</th>
+                    <th>Cashier</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Discount</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %}
+                <tr>
+                    <td>#{{ sale.id }}</td>
+                    <td>{{ sale.customer.name }}</td>
+                    <td>{{ sale.cashier.username }}</td>
+                    <td>{{ sale.items.count }}</td>
+                    <td>${{ sale.total_amount }}</td>
+                    <td>{{ sale.discount_percentage }}%</td>
+                    <td>{{ sale.timestamp|date:"M d, Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-5">No sales found for the selected period</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
