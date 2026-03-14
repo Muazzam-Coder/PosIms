@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.db.models import Q, Sum, Count, F
+from django.db.models import Q, Sum, Count, F, ExpressionWrapper, DecimalField
 from django.utils import timezone
 from datetime import datetime, timedelta
 
@@ -444,11 +444,21 @@ def inventory_status(request):
     
     products = Product.objects.all()
     low_stock_products = products.filter(stock_quantity__lte=F('low_stock_threshold'))
+
+    total_stock_value = products.aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F('stock_quantity') * F('selling_price'),
+                output_field=DecimalField()
+            )
+        )
+    )['total'] or 0
     
     context = {
         'products': products,
         'low_stock_products': low_stock_products,
-        'low_stock_count': low_stock_products.count()
+        'low_stock_count': low_stock_products.count(),
+        'total_stock_value': total_stock_value,
     }
     return render(request, 'inventory_status.html', context)
 
