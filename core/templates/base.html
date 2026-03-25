@@ -28,11 +28,23 @@
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <span class="nav-link">{{ user.username }} ({{ user.get_role_display }})</span>
+                        <span class="nav-link fw-bold text-primary">{{ user.username }} ({{ user.get_role_display }})</span>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        <a class="nav-link text-danger" href="{% url 'logout' %}">Logout</a>
                     </li>
+                    
+                    <!-- Mobile View Menu Items -->
+                    <div class="d-md-none mt-3 border-top pt-3">
+                        <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}"><i class="bi bi-house me-2"></i>Dashboard</a></li>
+                        {% if user.role != 'cashier' %}
+                            <li class="nav-item"><a class="nav-link" href="{% url 'product_list' %}"><i class="bi bi-box me-2"></i>Products</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{% url 'customer_list' %}"><i class="bi bi-people me-2"></i>Customers</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{% url 'inventory_status' %}"><i class="bi bi-pie-chart me-2"></i>Inventory</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{% url 'sales_report' %}"><i class="bi bi-graph-up me-2"></i>Reports</a></li>
+                        {% endif %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'sales_history' %}"><i class="bi bi-clock-history me-2"></i>Sales History</a></li>
+                    </div>
                     {% endif %}
                 </ul>
             </div>
