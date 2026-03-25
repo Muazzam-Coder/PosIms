@@ -4,6 +4,21 @@
 {% block title %}Sales Receipt{% endblock %}
 
 {% block content %}
+<style>
+@media print {
+    body { background-color: #fff !important; margin: 0; padding: 0; font-size: 12pt; }
+    .navbar, .sidebar, .btn, .no-print { display: none !important; }
+    .card { border: none !important; box-shadow: none !important; width: 100% !important; margin: 0 !important; }
+    .col-md-6 { width: 100% !important; max-width: 100% !important; flex: 0 0 100% !important; margin: 0 !important; padding: 0 !important; }
+    .container-fluid, .row { margin: 0 !important; padding: 0 !important; }
+    .card-header { background-color: transparent !important; color: #000 !important; border-bottom: 2px dashed #000; padding: 10px 0 !important; }
+    .table { width: 100%; margin-bottom: 10px; color: #000 !important; }
+    .table td, .table th { padding: 4px 0 !important; border-bottom: 1px dashed #ccc !important; }
+    hr { border-top: 1px dashed #000 !important; opacity: 1 !important; }
+    @page { margin: 0.5cm; }
+}
+</style>
+
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="card">
@@ -75,15 +90,27 @@
                     <small>Thank you for your purchase!</small>
                 </div>
 
-                <div class="mt-4">
-                    <button onclick="window.print()" class="btn btn-primary w-100 mb-2">
-                        <i class="bi bi-printer"></i> Print Receipt
+                <div class="mt-4 no-print">
+                    <button onclick="window.print()" class="btn btn-primary w-100 mb-2 shadow-sm fw-bold">
+                        <i class="bi bi-printer me-2"></i> Print Receipt
                     </button>
-                    <a href="{% url 'process_return' pk=sale.id %}" class="btn btn-warning w-100 mb-2">
-                        <i class="bi bi-arrow-return-left"></i> Process Return
+                    
+                    <!-- Email Form -->
+                    <form method="POST" action="{% url 'email_receipt' sale.id %}" class="mb-3">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="email" name="customer_email" class="form-control" placeholder="Customer Email Address" required>
+                            <button type="submit" class="btn btn-secondary">
+                                <i class="bi bi-envelope me-1"></i> Send
+                            </button>
+                        </div>
+                    </form>
+
+                    <a href="{% url 'process_return' pk=sale.id %}" class="btn btn-warning w-100 mb-2 fw-bold text-dark shadow-sm">
+                        <i class="bi bi-arrow-return-left me-2"></i> Process Return
                     </a>
-                    <a href="{% url 'sales_transaction' %}" class="btn btn-outline-primary w-100">
-                        <i class="bi bi-receipt"></i> New Sale
+                    <a href="{% url 'sales_transaction' %}" class="btn btn-outline-primary w-100 fw-bold">
+                        <i class="bi bi-receipt me-2"></i> New Sale
                     </a>
                 </div>
             </div>

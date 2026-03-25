@@ -67,6 +67,20 @@
 </div>
 {% endif %}
 
+<!-- Revenue Chart -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white pt-4 pb-2 border-0">
+                <h5 class="fw-bold text-dark"><i class="bi bi-graph-up-arrow text-success me-2"></i>Store Analytics (Last 7 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row g-4">
     <div class="col-md-6">
         <div class="card shadow-sm h-100">
@@ -117,4 +131,34 @@
     border-color: #dee2e6 !important;
 }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar', // Using Bar chart for Manager dashboard to differentiate aesthetics
+            data: {
+                labels: JSON.parse('{{ chart_dates|safe|escapejs }}'),
+                datasets: [{
+                    label: 'Revenue ($)',
+                    data: JSON.parse('{{ chart_revenue|safe|escapejs }}'),
+                    backgroundColor: '#10b981',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        grid: { borderDash: [2, 4], color: '#e5e7eb' }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}

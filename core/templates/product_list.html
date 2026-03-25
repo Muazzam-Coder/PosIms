@@ -45,6 +45,7 @@
                     <th class="ps-4">Product Info</th>
                     <th>Category</th>
                     <th>Price</th>
+                    <th>Barcode</th>
                     <th>Stock status</th>
                     <th class="text-end pe-4">Actions</th>
                 </tr>
@@ -62,6 +63,16 @@
                         </span>
                     </td>
                     <td class="fw-bold text-success fs-5">${{ product.selling_price }}</td>
+                    <td>
+                        <svg class="barcode"
+                            jsbarcode-value="{% if product.sku %}{{ product.sku }}{% else %}{{ product.id|stringformat:'05d' }}{% endif %}"
+                            jsbarcode-height="30"
+                            jsbarcode-width="1.5"
+                            jsbarcode-fontSize="12"
+                            jsbarcode-margin="0"
+                            jsbarcode-displayValue="true">
+                        </svg>
+                    </td>
                     <td>
                         <div class="d-flex align-items-center">
                             <span class="fs-5 fw-bold me-2">{{ product.stock_quantity }}</span>
@@ -130,6 +141,12 @@ input[name="search"] {
         
         let catSelect = document.querySelector('select[name="category_filter"]');
         if (catSelect) catSelect.classList.add('form-select', 'form-select-lg');
+        
+        // Initialize Barcodes
+        if (typeof JsBarcode !== 'undefined') {
+            JsBarcode(".barcode").init();
+        }
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 {% endblock %}

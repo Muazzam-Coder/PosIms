@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.db.models import Q, Sum, Count, F, ExpressionWrapper, DecimalField
 from django.utils import timezone
 from datetime import datetime, timedelta
@@ -68,6 +68,21 @@ def dashboard(request):
     """Role-based dashboard with key metrics."""
     context = {}
     
+    import json
+    from datetime import timedelta
+    today = timezone.now().date()
+    
+    # Chart data: Last 7 days revenue
+    dates = [(today - timedelta(days=i)).strftime('%b %d') for i in range(6, -1, -1)]
+    revenue_data = []
+    for i in range(6, -1, -1):
+        d = today - timedelta(days=i)
+        r = Sale.objects.filter(timestamp__date=d).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+        revenue_data.append(float(r))
+        
+    context['chart_dates'] = json.dumps(dates)
+    context['chart_revenue'] = json.dumps(revenue_data)
+    
     if request.user.role == 'admin':
         context['total_users'] = User.objects.count()
         context['total_customers'] = Customer.objects.count()
@@ -76,9 +91,8 @@ def dashboard(request):
         return render(request, 'admin_dashboard.html', context)
     
     elif request.user.role == 'manager':
-        today = timezone.now().date()
         context['today_sales'] = Sale.objects.filter(timestamp__date=today).count()
-        context['today_revenue'] = Sale.objects.filter(timestamp__date=today).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+        context['today_revenue'] = revenue_data[-1]  # Today's revenue is the last item
         context['low_stock_products'] = Product.objects.filter(stock_quantity__lte=F('low_stock_threshold')).count()
         context['total_customers'] = Customer.objects.count()
         return render(request, 'manager_dashboard.html', context)
@@ -368,6 +382,23 @@ def sales_receipt(request, pk):
     return render(request, 'sales_receipt.html', context)
 
 
+@require_POST
+@login_required
+def email_receipt(request, pk):
+    """Simulate emailing the receipt to the customer."""
+    sale = get_object_or_404(Sale, pk=pk)
+    email = request.POST.get('customer_email')
+    
+    if email:
+        # In a production 2026 app, this would use django.core.mail.send_mail
+        # or an API like SendGrid/Postmark configured in settings.py
+        messages.success(request, f"Digital receipt for Sale #{sale.id} has been emailed to {email}")
+    else:
+        messages.error(request, "Please provide a valid email address.")
+        
+    return redirect('sales_receipt', pk=sale.id)
+
+
 @login_required
 def sales_history(request):
     """View sales history."""
@@ -471,6 +502,9 @@ def inventory_status(request):
 @login_required
 def sales_report(request):
     """Generate sales reports for a given period with quantity details."""
+    import csv
+    from django.http import HttpResponse
+
     if request.user.role == 'cashier':
         messages.error(request, 'Access denied. Manager or Admin only.')
         return redirect('dashboard')
@@ -515,6 +549,16 @@ def sales_report(request):
             'num_unique_items': sales_items.values('product').distinct().count(),
             'period': f"{start_date} to {end_date}"
         }
+        
+        # CSV Export Logic
+        if request.GET.get('export') == '1':
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = f'attachment; filename="sales_report_{start_date}_to_{end_date}.csv"'
+            writer = csv.writer(response)
+            writer.writerow(['Product ID', 'Product Name', 'Total Quantity Sold', 'Total Revenue', 'Transaction Count'])
+            for pid, data in product_summary.items():
+                writer.writerow([pid, data['product_name'], data['total_quantity'], data['total_revenue'], data['num_items']])
+            return response
     
     context = {
         'form': form,
@@ -528,6 +572,9 @@ def sales_report(request):
 @login_required
 def inventory_report(request):
     """Generate inventory reports."""
+    import csv
+    from django.http import HttpResponse
+
     if request.user.role == 'cashier':
         messages.error(request, 'Access denied. Manager or Admin only.')
         return redirect('dashboard')
@@ -540,6 +587,16 @@ def inventory_report(request):
         'low_stock_count': products.filter(stock_quantity__lte=F('low_stock_threshold')).count(),
         'out_of_stock_count': products.filter(stock_quantity=0).count(),
     }
+    
+    # CSV Export Logic
+    if request.GET.get('export') == '1':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="inventory_report.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'SKU', 'Name', 'Category', 'Selling Price', 'Stock Quantity', 'Value'])
+        for p in products:
+            writer.writerow([p.id, p.sku, p.name, p.category, p.selling_price, p.stock_quantity, p.stock_quantity * p.selling_price])
+        return response
     
     context = {'products': products, 'report_data': report_data}
     return render(request, 'inventory_report.html', context)

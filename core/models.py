@@ -29,6 +29,8 @@ class Product(models.Model):
     selling_price = models.DecimalField(max_digits=10, decimal_places=2)
     stock_quantity = models.PositiveIntegerField(default=0)
     low_stock_threshold = models.PositiveIntegerField(default=10) # For low-stock notifications
+    sku = models.CharField(max_length=100, blank=True, null=True, help_text="Barcode/SKU string for scanners")
+    tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0, help_text="Tax or VAT percentage (e.g., 5.00 for 5%)")
 
     def __str__(self):
         return f"{self.name} - Stock: {self.stock_quantity}"
@@ -40,6 +42,14 @@ class Sale(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
+    PAYMENT_CHOICES = (
+        ('cash', 'Cash'),
+        ('card', 'Credit/Debit Card'),
+        ('mobile', 'Mobile Wallet'),
+    )
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='cash')
 
     def __str__(self):
         return f"Sale ID: {self.id} on {self.timestamp.strftime('%Y-%m-%d')}"

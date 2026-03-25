@@ -55,6 +55,20 @@
     </div>
 </div>
 
+<!-- Revenue Chart -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white pt-4 pb-2 border-0">
+                <h5 class="fw-bold text-dark"><i class="bi bi-graph-up text-primary me-2"></i>Revenue Trend (Last 7 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row g-4">
     <div class="col-md-6">
         <div class="card shadow-sm h-100">
@@ -113,4 +127,40 @@
     border-color: #dee2e6 !important;
 }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: JSON.parse('{{ chart_dates|safe|escapejs }}'),
+                datasets: [{
+                    label: 'Revenue ($)',
+                    data: JSON.parse('{{ chart_revenue|safe|escapejs }}'),
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#4f46e5',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { borderDash: [2, 4], color: '#e5e7eb' } 
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}
