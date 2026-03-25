@@ -4,45 +4,73 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Customers</h1>
-    <a href="{% url 'customer_create' %}" class="btn btn-primary btn-custom">
-        <i class="bi bi-person-plus"></i> Add Customer
+    <h1 class="mb-0 fw-bold"><i class="bi bi-people text-primary me-2"></i>Customers List</h1>
+    <a href="{% url 'customer_create' %}" class="btn btn-primary btn-lg shadow-sm fw-bold">
+        <i class="bi bi-person-plus-fill me-1"></i> Add Customer
     </a>
 </div>
 
-<div class="card">
+<div class="card shadow-sm border-0 bg-white">
     <div class="table-responsive">
-        <table class="table table-hover mb-0">
-            <thead class="table-light">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
                 <tr>
-                    <th>Name</th>
-                    <th>Phone</th>
-                    <th>Created</th>
-                    <th>Actions</th>
+                    <th class="ps-4">Customer Details</th>
+                    <th>Phone Number</th>
+                    <th>Member Since</th>
+                    <th class="text-end pe-4">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for customer in customers %}
-                <tr>
-                    <td><strong>{{ customer.name }}</strong></td>
-                    <td>{{ customer.phone_number|default:"N/A" }}</td>
-                    <td>{{ customer.created_at|date:"M d, Y" }}</td>
+                <tr class="hover-row-bg">
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">
+                                <span class="fw-bold fs-5">{{ customer.name|make_list|first|upper }}</span>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark fs-6">{{ customer.name }}</div>
+                                <small class="text-muted">ID: #{{ customer.id }}</small>
+                            </div>
+                        </div>
+                    </td>
                     <td>
-                        <a href="{% url 'customer_update' customer.id %}" class="btn btn-sm btn-outline-warning">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <a href="{% url 'customer_delete' customer.id %}" class="btn btn-sm btn-outline-danger">
-                            <i class="bi bi-trash"></i>
-                        </a>
+                        {% if customer.phone_number %}
+                            <a href="tel:{{ customer.phone_number }}" class="text-decoration-none text-dark"><i class="bi bi-telephone text-muted me-2"></i>{{ customer.phone_number }}</a>
+                        {% else %}
+                            <span class="text-muted fst-italic">Not provided</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-dark border"><i class="bi bi-calendar3 me-1"></i>{{ customer.created_at|date:"M d, Y" }}</span>
+                    </td>
+                    <td class="text-end pe-4">
+                        <div class="btn-group shadow-sm">
+                            <a href="{% url 'customer_update' customer.id %}" class="btn btn-outline-primary" title="Edit">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <a href="{% url 'customer_delete' customer.id %}" class="btn btn-outline-danger" title="Delete">
+                                <i class="bi bi-trash3"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4" class="text-center text-muted py-5">No customers found</td>
+                    <td colspan="4" class="text-center text-muted py-5">
+                        <i class="bi bi-people d-block display-3 mb-3 text-muted opacity-25"></i>
+                        <span class="fs-4">No customers registered yet.</span>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+<style>
+.hover-row-bg { transition: background-color 0.2s ease; }
+.hover-row-bg:hover { background-color: #f8f9fa !important; }
+</style>
 {% endblock %}

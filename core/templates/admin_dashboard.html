@@ -3,71 +3,114 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">Admin Dashboard</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0 fw-bold"><i class="bi bi-shield-lock text-primary me-2"></i>Admin Dashboard</h1>
+    <span class="text-muted">{{ today | date:"F d, Y" }}</span>
+</div>
 
-<div class="row">
+<div class="row g-4 mb-5">
     <div class="col-md-3">
-        <div class="stat-card">
-            <h3>{{ total_users }}</h3>
-            <p>Total Users</p>
+        <div class="card h-100 shadow-sm border-0 bg-gradient text-white" style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-uppercase fw-bold text-white-50 mb-0">Total Users</h6>
+                    <i class="bi bi-people fs-3 opacity-50"></i>
+                </div>
+                <h2 class="display-5 fw-bold mb-0">{{ total_users }}</h2>
+            </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="stat-card">
-            <h3>{{ total_customers }}</h3>
-            <p>Total Customers</p>
+        <div class="card h-100 shadow-sm border-0 bg-gradient text-white" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-uppercase fw-bold text-white-50 mb-0">Total Customers</h6>
+                    <i class="bi bi-person-lines-fill fs-3 opacity-50"></i>
+                </div>
+                <h2 class="display-5 fw-bold mb-0">{{ total_customers }}</h2>
+            </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="stat-card">
-            <h3>{{ total_products }}</h3>
-            <p>Total Products</p>
+        <div class="card h-100 shadow-sm border-0 bg-gradient text-white" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-uppercase fw-bold text-white-50 mb-0">Total Products</h6>
+                    <i class="bi bi-box-seam fs-3 opacity-50"></i>
+                </div>
+                <h2 class="display-5 fw-bold mb-0">{{ total_products }}</h2>
+            </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="stat-card">
-            <h3>{{ total_sales }}</h3>
-            <p>Total Sales</p>
+        <div class="card h-100 shadow-sm border-0 bg-gradient text-white" style="background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-uppercase fw-bold text-white-50 mb-0">Total Sales</h6>
+                    <i class="bi bi-receipt fs-3 opacity-50"></i>
+                </div>
+                <h2 class="display-5 fw-bold mb-0">{{ total_sales }}</h2>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="row mt-5">
+<div class="row g-4">
     <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Quick Actions</h5>
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                <h5 class="fw-bold text-dark"><i class="bi bi-lightning-charge text-warning me-2"></i>Quick Actions</h5>
             </div>
-            <div class="card-body">
-                <a href="{% url 'register' %}" class="btn btn-outline-primary btn-custom w-100 mb-2">
-                    <i class="bi bi-person-badge"></i> Create New User
-                </a>
-                <a href="{% url 'product_create' %}" class="btn btn-outline-primary btn-custom w-100 mb-2">
-                    <i class="bi bi-plus-circle"></i> Add New Product
-                </a>
-                <a href="{% url 'customer_create' %}" class="btn btn-outline-primary btn-custom w-100 mb-2">
-                    <i class="bi bi-person-plus"></i> Add New Customer
-                </a>
+            <div class="card-body p-4">
+                <div class="d-grid gap-3">
+                    <a href="{% url 'register' %}" class="btn btn-light text-start p-3 border hover-shadow rounded-3">
+                        <i class="bi bi-person-badge text-primary me-2 fs-5 align-middle"></i> 
+                        <span class="fw-medium text-dark">Create New User</span>
+                    </a>
+                    <a href="{% url 'product_create' %}" class="btn btn-light text-start p-3 border hover-shadow rounded-3">
+                        <i class="bi bi-plus-circle text-success me-2 fs-5 align-middle"></i> 
+                        <span class="fw-medium text-dark">Add New Product</span>
+                    </a>
+                    <a href="{% url 'customer_create' %}" class="btn btn-light text-start p-3 border hover-shadow rounded-3">
+                        <i class="bi bi-person-plus text-info me-2 fs-5 align-middle"></i> 
+                        <span class="fw-medium text-dark">Add New Customer</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
     <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0">Generate Reports</h5>
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                <h5 class="fw-bold text-dark"><i class="bi bi-file-earmark-bar-graph text-success me-2"></i>Generate Reports</h5>
             </div>
-            <div class="card-body">
-                <a href="{% url 'sales_report' %}" class="btn btn-outline-success btn-custom w-100 mb-2">
-                    <i class="bi bi-graph-up"></i> Sales Report
-                </a>
-                <a href="{% url 'inventory_report' %}" class="btn btn-outline-success btn-custom w-100 mb-2">
-                    <i class="bi bi-graph-down"></i> Inventory Report
-                </a>
-                <a href="{% url 'inventory_status' %}" class="btn btn-outline-success btn-custom w-100">
-                    <i class="bi bi-pie-chart"></i> Inventory Status
-                </a>
+            <div class="card-body p-4">
+                <div class="d-grid gap-3">
+                    <a href="{% url 'sales_report' %}" class="btn btn-light text-start p-3 border hover-shadow rounded-3">
+                        <i class="bi bi-graph-up text-primary me-2 fs-5 align-middle"></i> 
+                        <span class="fw-medium text-dark">Sales Report</span>
+                    </a>
+                    <a href="{% url 'inventory_report' %}" class="btn btn-light text-start p-3 border hover-shadow rounded-3">
+                        <i class="bi bi-graph-down text-danger me-2 fs-5 align-middle"></i> 
+                        <span class="fw-medium text-dark">Inventory Report</span>
+                    </a>
+                    <a href="{% url 'inventory_status' %}" class="btn btn-light text-start p-3 border hover-shadow rounded-3">
+                        <i class="bi bi-pie-chart text-warning me-2 fs-5 align-middle"></i> 
+                        <span class="fw-medium text-dark">Inventory Status</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.hover-shadow { transition: all 0.2s ease; }
+.hover-shadow:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); 
+    background-color: #f8f9fa;
+    border-color: #dee2e6 !important;
+}
+</style>
 {% endblock %}

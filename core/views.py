@@ -19,6 +19,9 @@ from .forms import (UserRegistrationForm, CustomerForm, ProductForm,
 
 def login_view(request):
     """Handle user login with role-based access."""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+        
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')

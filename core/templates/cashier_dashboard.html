@@ -3,42 +3,99 @@
 {% block title %}Cashier Dashboard{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">Cashier Dashboard</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0 fw-bold"><i class="bi bi-person-workspace text-primary me-2"></i>Cashier Dashboard</h1>
+    <span class="text-muted">{{ today | date:"F d, Y" }}</span>
+</div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Sales</h5>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white border-0 pt-4 pb-2">
+                <h4 class="fw-bold text-dark"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Quick Actions</h4>
             </div>
-            <div class="card-body">
-                <a href="{% url 'sales_transaction' %}" class="btn btn-lg btn-primary btn-custom w-100 mb-3">
-                    <i class="bi bi-receipt"></i> Process New Sale
-                </a>
-                <a href="{% url 'customer_create' %}" class="btn btn-outline-primary btn-custom w-100 mb-2">
-                    <i class="bi bi-person-plus"></i> Add New Customer
-                </a>
-                <a href="{% url 'sales_history' %}" class="btn btn-outline-primary btn-custom w-100">
-                    <i class="bi bi-clock-history"></i> View Sales History
-                </a>
+            <div class="card-body px-4 pb-4">
+                <div class="d-grid gap-3">
+                    <!-- Point of Sale Button -->
+                    <a href="{% url 'sales_transaction' %}" class="btn btn-primary text-start p-4 border-0 rounded-4 shadow-sm position-relative overflow-hidden" style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);">
+                        <div class="position-absolute end-0 top-50 translate-middle-y me-4 opacity-25">
+                            <i class="bi bi-cart3 display-1"></i>
+                        </div>
+                        <div class="position-relative z-1">
+                            <h3 class="fw-bold mb-1"><i class="bi bi-receipt me-2"></i>Process New Sale</h3>
+                            <p class="mb-0 text-white-50"><kbd class="bg-dark text-white me-1">Shift</kbd> + <kbd class="bg-dark text-white">S</kbd> to jump anywhere</p>
+                        </div>
+                    </a>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <a href="{% url 'customer_create' %}" class="btn btn-light text-start p-3 border hover-shadow rounded-3 w-100 h-100">
+                                <i class="bi bi-person-plus text-success me-2 fs-4 align-middle"></i> 
+                                <span class="fw-medium text-dark align-middle">Add Customer</span>
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'sales_history' %}" class="btn btn-light text-start p-3 border hover-shadow rounded-3 w-100 h-100">
+                                <i class="bi bi-clock-history text-info me-2 fs-4 align-middle"></i> 
+                                <span class="fw-medium text-dark align-middle">Sales History</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">Quick Tips</h5>
-            </div>
-            <div class="card-body">
-                <ul class="list-unstyled">
-                    <li class="mb-2">✓ Click "Process New Sale" to start a transaction</li>
-                    <li class="mb-2">✓ You can add customers on the fly during sales</li>
-                    <li class="mb-2">✓ Discounts are applied at checkout</li>
-                    <li class="mb-2">✓ Inventory updates automatically after each sale</li>
-                    <li>✓ Check your sales history anytime</li>
-                </ul>
+    
+    <div class="col-lg-5">
+        <div class="card shadow-sm border-0 h-100 bg-light">
+            <div class="card-body p-4">
+                <h5 class="fw-bold text-dark mb-4"><i class="bi bi-info-circle-fill text-primary me-2"></i>Operating Tips</h5>
+                
+                <div class="d-flex align-items-start mb-3 bg-white p-3 rounded-3 shadow-sm">
+                    <div class="bg-primary text-white rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="bi bi-keyboard"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Keyboard First</h6>
+                        <p class="text-muted small mb-0">Use <kbd>F2</kbd> to search products, <kbd>F8</kbd> to checkout immediately in the POS screen.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start mb-3 bg-white p-3 rounded-3 shadow-sm">
+                    <div class="bg-success text-white rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="bi bi-tag"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Discounts</h6>
+                        <p class="text-muted small mb-0">Press <kbd>F4</kbd> to jump to the discount field during an active transaction.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start bg-white p-3 rounded-3 shadow-sm">
+                    <div class="bg-info text-white rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="bi bi-person-check"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Customers</h6>
+                        <p class="text-muted small mb-0">Add customers on the fly to track purchase history and returns easily.</p>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="Mousetrap.trigger('f1')"><i class="bi bi-question-circle me-1"></i> View All Hotkeys</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.hover-shadow { transition: all 0.2s ease; }
+.hover-shadow:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); 
+    background-color: #ffffff;
+    border-color: #dee2e6 !important;
+}
+</style>
 {% endblock %}

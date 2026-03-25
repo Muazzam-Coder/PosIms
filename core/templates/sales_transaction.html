@@ -1,67 +1,124 @@
 {% extends 'base.html' %}
 
-{% block title %}Process Sale{% endblock %}
+{% block title %}Point of Sale{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">Process New Sale</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0 fw-bold"><i class="bi bi-cart-plus me-2"></i>Point of Sale</h1>
+    <div>
+        <span class="badge bg-secondary p-2 me-2"><kbd>F2</kbd> Search Item</span>
+        <span class="badge bg-secondary p-2 me-2"><kbd>F4</kbd> Discount</span>
+        <span class="badge bg-secondary p-2"><kbd>F8</kbd> Checkout</span>
+    </div>
+</div>
 
 <div class="row">
-    <!-- LEFT SIDE: Customer Info & Items -->
-    <div class="col-md-8">
-        <!-- Customer Information -->
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Customer Information</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Customer Name (Optional)</label>
-                        <input type="text" id="customer_name" class="form-control" placeholder="Leave blank for walk-in">
+    <!-- LEFT SIDE: Customer & Search / Items -->
+    <div class="col-lg-8">
+        
+        <!-- Search and Add Item -->
+        <div class="card mb-3 border-primary shadow-sm" style="border-width: 2px;">
+            <div class="card-body p-3">
+                <div class="row align-items-end">
+                    <div class="col-md-9">
+                        <label class="form-label fw-bold text-primary"><i class="bi bi-search"></i> Product Search / Barcode</label>
+                        <input type="text" id="product_search" class="form-control form-control-lg" placeholder="Type name or scan barcode... (Press Enter to add)" list="productList" autocomplete="off" autofocus>
+                        <datalist id="productList">
+                            {% for product in products %}
+                            <option value="{{ product.name }} | ID:{{product.id}}">Stock: {{ product.stock_quantity }} | ${{ product.selling_price }}</option>
+                            {% endfor %}
+                        </datalist>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Phone Number (Optional)</label>
-                        <input type="text" id="customer_phone" class="form-control" placeholder="Phone number">
+                    <div class="col-md-3">
+                        <button class="btn btn-primary btn-lg w-100" onclick="processSearchEnter()">
+                            Add <i class="bi bi-arrow-return-left"></i>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Sale Items -->
-        <div class="card">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0">Sale Items</h5>
-            </div>
-            <div class="card-body">
-                <div id="items_container"></div>
-                <button type="button" class="btn btn-outline-success" onclick="addSaleItem()">
-                    <i class="bi bi-plus-circle"></i> Add Item
-                </button>
+        <!-- Sale Items Table -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Product</th>
+                                <th width="15%">Price</th>
+                                <th width="15%">Qty</th>
+                                <th width="15%">Disc ($)</th>
+                                <th width="15%">Total</th>
+                                <th width="5%"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="items_tbody">
+                            <!-- Items will be injected here via JS -->
+                            <tr id="empty_cart_msg">
+                                <td colspan="6" class="text-center text-muted py-5">
+                                    <i class="bi bi-cart-x fs-1 d-block mb-2"></i>
+                                    Cart is empty. Search above to add items.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+
     </div>
 
-    <!-- RIGHT SIDE: Sale Summary -->
-    <div class="col-md-4">
-        <div class="card sticky-top">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">Sale Summary</h5>
+    <!-- RIGHT SIDE: Customer Info & Sale Summary -->
+    <div class="col-lg-4">
+        
+        <!-- Customer Information -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-light">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-person me-2"></i>Customer Info</h6>
             </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label">Subtotal</label>
-                    <input type="number" id="subtotal" class="form-control" readonly value="0.00" step="0.01">
+            <div class="card-body p-3">
+                <div class="mb-2">
+                    <input type="text" id="customer_name" class="form-control form-control-sm" placeholder="Customer Name (Walk-in)">
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Discount (%)</label>
-                    <input type="number" id="discount_pct" class="form-control" value="0" step="0.01" onchange="recalcTotal()">
+                <div>
+                    <input type="text" id="customer_phone" class="form-control form-control-sm" placeholder="Phone Number (Optional)">
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Total Amount</label>
-                    <input type="number" id="total_amount" class="form-control form-control-lg" readonly value="0.00" step="0.01">
+            </div>
+        </div>
+
+        <!-- Sale Summary -->
+        <div class="card shadow-md sticky-top" style="top: 20px;">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0 text-center fw-bold">Sale Summary</h5>
+            </div>
+            <div class="card-body bg-light">
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted fw-bold">Subtotal:</span>
+                    <span class="fw-bold fs-5">$<span id="display_subtotal">0.00</span></span>
                 </div>
-                <button type="button" class="btn btn-primary btn-lg w-100" onclick="finalizeSale()">
-                    <i class="bi bi-check-circle"></i> Complete Sale
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted fw-bold mb-1">Overall Discount (%) <span class="hk-hint">F4</span></label>
+                    <div class="input-group">
+                        <input type="number" id="discount_pct" class="form-control text-end fs-5" value="0" step="0.01" min="0" max="100" onchange="recalcTotal()" onkeyup="recalcTotal()">
+                        <span class="input-group-text">%</span>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="fw-bold fs-4">Total:</span>
+                    <span class="fw-bold fs-2 text-primary" style="letter-spacing: -1px;">$<span id="display_total">0.00</span></span>
+                </div>
+
+                <button type="button" class="btn btn-success btn-lg w-100 shadow-sm custom-checkout-btn py-3 fw-bold fs-5" onclick="finalizeSale()">
+                    <i class="bi bi-check2-circle me-2"></i> Checkout (F8)
+                </button>
+                <button type="button" class="btn btn-outline-danger w-100 mt-2" onclick="clearCart()">
+                    Cancel (Esc)
                 </button>
             </div>
         </div>
@@ -78,180 +135,300 @@
     <div id="hid_items"></div>
 </form>
 
-<!-- JavaScript -->
+<!-- JavaScript for POS specifically -->
 <script>
-    var PRODUCTS_DATA = [];
-    var itemRowCounter = 0;
+    const PRODUCTS_DATA = JSON.parse(`[
+        {% for product in products %}
+        {
+            "id": {{ product.id }},
+            "name": "{{ product.name|escapejs }}",
+            "price": {{ product.selling_price }},
+            "stock": {{ product.stock_quantity }}
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]`);
+    
+    let cart = []; // Array of objects mapping to cart items
+    let cartCounter = 0;
 
-    // Populate products from Django template
-    {% for product in products %}
-    PRODUCTS_DATA.push({
-        id: {{ product.id }},
-        name: "{{ product.name|escapejs }}",
-        price: {{ product.selling_price }},
-        stock: {{ product.stock_quantity }}
+    const searchInput = document.getElementById('product_search');
+    
+    // Bind Enter key on the search input
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            processSearchEnter();
+        }
     });
-    {% endfor %}
 
-    // Add a new sale item row
-    function addSaleItem() {
-        itemRowCounter++;
-        var itemId = "item_" + itemRowCounter;
-        
-        var itemHtml = '<div class="row mb-3 item-row" id="' + itemId + '" class="border p-3 rounded mb-3">' +
-            '<div class="col-md-4">' +
-            '<label class="form-label">Product</label>' +
-            '<select class="form-control product-select" data-itemid="' + itemRowCounter + '" onchange="onProductChange(' + itemRowCounter + ')">' +
-            '<option value="">-- Select Product --</option>';
-        
-        // Add product options
-        for (var j = 0; j < PRODUCTS_DATA.length; j++) {
-            var prod = PRODUCTS_DATA[j];
-            itemHtml += '<option value="' + prod.id + '" data-price="' + prod.price + '">' +
-                prod.name + ' (Stock: ' + prod.stock + ') - $' + prod.price +
-                '</option>';
+    function processSearchEnter() {
+        const val = searchInput.value.trim();
+        if (!val) {
+            // If empty and hit Enter, maybe they want to checkout? 
+            // Or just do nothing. Let's do nothing to be safe.
+            return;
         }
-        
-        itemHtml += '</select></div>' +
-            '<div class="col-md-2">' +
-            '<label class="form-label">Qty</label>' +
-            '<input type="number" class="form-control qty-input" data-itemid="' + itemRowCounter + '" value="1" min="1" onchange="recalcTotal()">' +
-            '</div>' +
-            '<div class="col-md-2">' +
-            '<label class="form-label">Unit Price</label>' +
-            '<input type="number" class="form-control item-price" data-itemid="' + itemRowCounter + '" readonly value="0.00" step="0.01">' +
-            '</div>' +
-            '<div class="col-md-2">' +
-            '<label class="form-label">Discount ($)</label>' +
-            '<input type="number" class="form-control item-discount" data-itemid="' + itemRowCounter + '" value="0" step="0.01" onchange="recalcTotal()">' +
-            '</div>' +
-            '<div class="col-md-1">' +
-            '<label class="form-label">Total</label>' +
-            '<input type="number" class="form-control item-total" data-itemid="' + itemRowCounter + '" readonly value="0.00" step="0.01">' +
-            '</div>' +
-            '<div class="col-md-1 d-flex align-items-end">' +
-            '<button type="button" class="btn btn-danger btn-sm w-100" onclick="removeItem(' + itemRowCounter + ')">' +
-            '<i class="bi bi-trash"></i>' +
-            '</button>' +
-            '</div>' +
-            '</div>';
-        
-        document.getElementById("items_container").insertAdjacentHTML("beforeend", itemHtml);
-    }
 
-    // Product selection changed
-    function onProductChange(itemId) {
-        var select = document.querySelector('[data-itemid="' + itemId + '"].product-select');
-        var priceField = document.querySelector('[data-itemid="' + itemId + '"].item-price');
+        // Try to parse out the ID from "Name | ID:123"
+        let matchedProduct = null;
+        const idMatch = val.match(/ID:(\d+)$/);
         
-        if (select && priceField) {
-            var option = select.options[select.selectedIndex];
-            var price = option.getAttribute("data-price") || "0";
-            priceField.value = price;
-            recalcTotal();
+        if (idMatch) {
+            const parsedId = parseInt(idMatch[1]);
+            matchedProduct = PRODUCTS_DATA.find(p => p.id === parsedId);
+        } else {
+            // Try exact fuzzy match on name or ID if typed manually without autocomplete
+            matchedProduct = PRODUCTS_DATA.find(p => 
+                p.name.toLowerCase() === val.toLowerCase() || 
+                p.id.toString() === val
+            );
+        }
+
+        if (matchedProduct) {
+            addToCart(matchedProduct);
+            searchInput.value = ''; // clear
+            searchInput.focus();   // keep focus
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Not Found',
+                text: 'Could not find a matching product.',
+                timer: 1500,
+                showConfirmButton: false
+            });
+            searchInput.select();
         }
     }
 
-    // Recalculate totals including per-item discounts
+    function addToCart(product) {
+        // Check if already in cart
+        const existingItem = cart.find(i => i.product.id === product.id);
+        if (existingItem) {
+            // Increase qty
+            if (existingItem.qty >= product.stock) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Stock Limit Reached',
+                    text: `Only ${product.stock} available.`,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                return;
+            }
+            existingItem.qty += 1;
+            updateItemRow(existingItem.cartId);
+        } else {
+            // Add new
+            if (product.stock <= 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Out of Stock',
+                    text: `${product.name} is out of stock!`,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                return;
+            }
+            cartCounter++;
+            const item = {
+                cartId: cartCounter,
+                product: product,
+                qty: 1,
+                discount: 0
+            };
+            cart.push(item);
+            renderItemRow(item);
+        }
+        
+        document.getElementById('empty_cart_msg').style.display = 'none';
+        recalcTotal();
+    }
+
+    function renderItemRow(item) {
+        const tbody = document.getElementById('items_tbody');
+        const tr = document.createElement('tr');
+        tr.id = `cart_row_${item.cartId}`;
+        tr.className = "item-row";
+        
+        tr.innerHTML = `
+            <td>
+                <div class="fw-bold text-dark">${item.product.name}</div>
+                <small class="text-muted">ID: ${item.product.id} | Stock: ${item.product.stock}</small>
+            </td>
+            <td class="fs-5">$${item.product.price.toFixed(2)}</td>
+            <td>
+                <input type="number" class="form-control form-control-sm text-center fw-bold qty-input mousetrap" 
+                    id="qty_${item.cartId}" value="${item.qty}" min="1" max="${item.product.stock}"
+                    onchange="updateCartItemData(${item.cartId})" onkeyup="updateCartItemData(${item.cartId})">
+            </td>
+            <td>
+                <input type="number" class="form-control form-control-sm text-center item-discount mousetrap" 
+                    id="disc_${item.cartId}" value="${item.discount}" step="0.01" min="0"
+                    onchange="updateCartItemData(${item.cartId})" onkeyup="updateCartItemData(${item.cartId})">
+            </td>
+            <td class="fs-5 fw-bold text-primary" id="line_total_${item.cartId}">
+                $${((item.product.price * item.qty) - item.discount).toFixed(2)}
+            </td>
+            <td>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${item.cartId})" tabindex="-1">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+        
+        // After adding, focus the quantity input so they can rapidly change it
+        // document.getElementById(`qty_${item.cartId}`).focus();  <-- Optional: Some users prefer focus to stay on search. We keep it on search.
+    }
+
+    function updateItemRow(cartId) {
+        const item = cart.find(i => i.cartId === cartId);
+        if(!item) return;
+        document.getElementById(`qty_${cartId}`).value = item.qty;
+        document.getElementById(`disc_${cartId}`).value = item.discount;
+        const lineTotal = (item.product.price * item.qty) - item.discount;
+        document.getElementById(`line_total_${cartId}`).innerText = `$${lineTotal.toFixed(2)}`;
+    }
+
+    function updateCartItemData(cartId) {
+        const item = cart.find(i => i.cartId === cartId);
+        if(!item) return;
+        
+        let newQty = parseInt(document.getElementById(`qty_${cartId}`).value) || 1;
+        let newDisc = parseFloat(document.getElementById(`disc_${cartId}`).value) || 0;
+        
+        if (newQty > item.product.stock) {
+            Swal.fire({icon: 'warning', title: 'Exceeds Stock', text: `Stock is ${item.product.stock}`, timer: 1500, showConfirmButton: false});
+            newQty = item.product.stock;
+            document.getElementById(`qty_${cartId}`).value = newQty;
+        }
+        
+        item.qty = newQty;
+        item.discount = newDisc;
+        
+        const lineTotal = (item.product.price * item.qty) - item.discount;
+        document.getElementById(`line_total_${cartId}`).innerText = `$${lineTotal.toFixed(2)}`;
+        
+        recalcTotal();
+    }
+
+    function removeFromCart(cartId) {
+        cart = cart.filter(i => i.cartId !== cartId);
+        const tr = document.getElementById(`cart_row_${cartId}`);
+        if(tr) tr.remove();
+        
+        if(cart.length === 0) {
+            document.getElementById('empty_cart_msg').style.display = 'table-row';
+        }
+        recalcTotal();
+        searchInput.focus();
+    }
+    
+    function clearCart() {
+        if (cart.length === 0) return;
+        Swal.fire({
+            title: 'Clear Cart?',
+            text: "Are you sure you want to cancel this transaction?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, cancel it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                cart = [];
+                document.querySelectorAll('.item-row').forEach(e => e.remove());
+                document.getElementById('empty_cart_msg').style.display = 'table-row';
+                document.getElementById('discount_pct').value = 0;
+                document.getElementById('customer_name').value = '';
+                document.getElementById('customer_phone').value = '';
+                recalcTotal();
+                searchInput.focus();
+            }
+        });
+    }
+
     function recalcTotal() {
-        var subtotal = 0;
-        var itemRows = document.querySelectorAll(".item-row");
+        let subtotal = 0;
         
-        itemRows.forEach(function(row) {
-            var priceField = row.querySelector(".item-price");
-            var qtyField = row.querySelector(".qty-input");
-            var discountField = row.querySelector(".item-discount");
-            var totalField = row.querySelector(".item-total");
-            
-            if (priceField && qtyField) {
-                var price = parseFloat(priceField.value) || 0;
-                var qty = parseInt(qtyField.value) || 0;
-                var itemDiscount = parseFloat(discountField.value) || 0;
-                var itemTotal = (price * qty) - itemDiscount;
-                totalField.value = itemTotal.toFixed(2);
-                subtotal += itemTotal;
-            }
+        cart.forEach(item => {
+            const lineTotal = (item.product.price * item.qty) - item.discount;
+            subtotal += lineTotal;
         });
         
-        document.getElementById("subtotal").value = subtotal.toFixed(2);
+        const discountPct = parseFloat(document.getElementById("discount_pct").value) || 0;
+        const discountAmt = (subtotal * discountPct) / 100;
+        const total = subtotal - discountAmt;
         
-        var discountPct = parseFloat(document.getElementById("discount_pct").value) || 0;
-        var discountAmt = (subtotal * discountPct) / 100;
-        var total = subtotal - discountAmt;
+        document.getElementById("display_subtotal").innerText = subtotal.toFixed(2);
+        document.getElementById("display_total").innerText = total.toFixed(2);
         
-        document.getElementById("total_amount").value = total.toFixed(2);
+        // Also update hidden inputs if we want to preview it, though finalizeSale does it too.
     }
 
-    // Finalize and submit sale
     function finalizeSale() {
-        var itemRows = document.querySelectorAll(".item-row");
-        
-        if (itemRows.length === 0) {
-            alert("Please add at least one item");
+        if (cart.length === 0) {
+            Swal.fire('Empty Cart', 'Please add at least one item before checkout.', 'warning');
             return;
         }
-        
-        var hasSelection = false;
-        var stockErrors = [];
-        
-        itemRows.forEach(function(row) {
-            var select = row.querySelector(".product-select");
-            var qtyField = row.querySelector(".qty-input");
-            
-            if (select && select.value > 0) {
-                hasSelection = true;
-                
-                // Find product in PRODUCTS_DATA
-                var productId = parseInt(select.value);
-                var qty = parseInt(qtyField.value) || 1;
-                var product = PRODUCTS_DATA.find(p => p.id === productId);
-                
-                if (product && product.stock < qty) {
-                    stockErrors.push(product.name + " only has " + product.stock + " in stock, trying to sell " + qty);
-                }
-            }
-        });
-        
-        if (stockErrors.length > 0) {
-            alert("Insufficient Stock:\n" + stockErrors.join("\n"));
-            return;
-        }
-        
-        if (!hasSelection) {
-            alert("Please select at least one product");
-            return;
-        }
-        
+
         // Populate hidden form
-        document.getElementById("hid_customer_name").value = document.getElementById("customer_name").value;
-        document.getElementById("hid_customer_phone").value = document.getElementById("customer_phone").value;
-        document.getElementById("hid_discount_pct").value = document.getElementById("discount_pct").value;
-        document.getElementById("hid_total_amount").value = document.getElementById("total_amount").value;
+        document.getElementById("hid_customer_name").value = document.getElementById("customer_name").value.trim();
+        document.getElementById("hid_customer_phone").value = document.getElementById("customer_phone").value.trim();
+        document.getElementById("hid_discount_pct").value = document.getElementById("discount_pct").value || 0;
         
-        // Add item data
-        var itemsHtml = "";
-        itemRows.forEach(function(row) {
-            var select = row.querySelector(".product-select");
-            var qtyField = row.querySelector(".qty-input");
-            var discountField = row.querySelector(".item-discount");
-            
-            if (select && select.value > 0) {
-                var productId = select.value;
-                var qty = qtyField.value || 1;
-                var discount = discountField.value || 0;
-                itemsHtml += '<input type="hidden" name="product_id" value="' + productId + '">';
-                itemsHtml += '<input type="hidden" name="quantity" value="' + qty + '">';
-                itemsHtml += '<input type="hidden" name="discount_amount" value="' + discount + '">';
-            }
+        // Calculation
+        let subtotal = 0;
+        let itemsHtml = "";
+        
+        cart.forEach(item => {
+            subtotal += (item.product.price * item.qty) - item.discount;
+            itemsHtml += `<input type="hidden" name="product_id" value="${item.product.id}">`;
+            itemsHtml += `<input type="hidden" name="quantity" value="${item.qty}">`;
+            itemsHtml += `<input type="hidden" name="discount_amount" value="${item.discount}">`;
         });
         
+        const discountPct = parseFloat(document.getElementById("discount_pct").value) || 0;
+        const total = subtotal - ((subtotal * discountPct) / 100);
+        document.getElementById("hid_total_amount").value = total.toFixed(2);
         document.getElementById("hid_items").innerHTML = itemsHtml;
-        document.getElementById("sale_form").submit();
+        
+        // Submit
+        Swal.fire({
+            title: 'Completing Sale...',
+            text: `Total: $${total.toFixed(2)}`,
+            icon: 'info',
+            timer: 1000,
+            showConfirmButton: false,
+            willClose: () => {
+                document.getElementById("sale_form").submit();
+            }
+        });
     }
 
-    // Initialize - add first item on page load
-    window.addEventListener("load", function() {
-        addSaleItem();
+    // HOTKEYS SPECIFIC TO THIS PAGE
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof Mousetrap !== 'undefined') {
+            Mousetrap.bind('f2', (e) => {
+                e.preventDefault();
+                searchInput.focus();
+                searchInput.select();
+            });
+            Mousetrap.bind('f4', (e) => {
+                e.preventDefault();
+                document.getElementById('discount_pct').focus();
+                document.getElementById('discount_pct').select();
+            });
+            Mousetrap.bind('f8', (e) => {
+                e.preventDefault();
+                finalizeSale();
+            });
+            Mousetrap.bind('esc', (e) => {
+                e.preventDefault();
+                clearCart();
+            });
+        }
     });
+
 </script>
 {% endblock %}
